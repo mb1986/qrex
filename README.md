@@ -2,6 +2,14 @@
 
 ## Installation
 
+Install from [crates.io](https://crates.io):
+
+```sh
+cargo install qrex
+```
+
+or directly from [GitHub](https://github.com/mb1986/qrex):
+
 ```sh
 cargo install --git https://github.com/mb1986/qrex
 ```

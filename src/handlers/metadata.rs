@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -18,7 +18,7 @@ pub struct MetadataRecord {
 
 pub struct Metadata {
     path: PathBuf,
-    records: HashMap<PathBuf, MetadataRecord>,
+    records: BTreeMap<PathBuf, MetadataRecord>,
 }
 
 impl Metadata {
@@ -35,7 +35,7 @@ impl Metadata {
             let file = fs::File::open(&path).unwrap();
             serde_yaml::from_reader(file).unwrap()
         } else {
-            HashMap::new()
+            BTreeMap::new()
         };
 
         Metadata { path, records }

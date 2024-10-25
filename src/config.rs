@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::error::Result;
+use anyhow::Result;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]

@@ -1,6 +1,5 @@
+use anyhow::Result;
 use binrw::binread;
-
-use crate::error::Result;
 
 #[derive(Debug)]
 #[binread]

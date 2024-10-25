@@ -1,5 +1,6 @@
 use std::io::Read;
 
+use anyhow::Result;
 use binrw::binread;
 use flate2::read::ZlibDecoder;
 use zstd::stream::copy_decode;
@@ -19,16 +20,16 @@ impl DataRecord {
         &self.data
     }
 
-    pub fn decompress_zlib(&self) -> Vec<u8> {
+    pub fn decompress_zlib(&self) -> Result<Vec<u8>> {
         let mut data = Vec::new();
         let mut decoder = ZlibDecoder::new(&self.data[4..]);
-        decoder.read_to_end(&mut data).unwrap();
-        data
+        decoder.read_to_end(&mut data)?;
+        Ok(data)
     }
 
-    pub fn decompress_zstd(&self) -> Vec<u8> {
+    pub fn decompress_zstd(&self) -> Result<Vec<u8>> {
         let mut data = Vec::new();
-        copy_decode(&self.data[..], &mut data).unwrap();
-        data
+        copy_decode(&self.data[..], &mut data)?;
+        Ok(data)
     }
 }

@@ -4,6 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::Result;
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +18,7 @@ pub struct MetadataRecord {
 }
 
 pub struct Metadata {
+    base_path: PathBuf,
     path: PathBuf,
     records: BTreeMap<PathBuf, MetadataRecord>,
 }
@@ -25,25 +27,29 @@ impl Metadata {
     pub fn new(base_path: &Path) -> Self {
         debug!("creating metadata handler with base path `{:?}`", base_path);
 
-        if !base_path.is_dir() {
-            fs::create_dir_all(&base_path).unwrap();
-        }
-
         let path = base_path.join(METADATA_FILENAME);
 
-        let records = if path.is_file() {
-            let file = fs::File::open(&path).unwrap();
-            serde_yaml::from_reader(file).unwrap()
-        } else {
-            BTreeMap::new()
-        };
-
-        Metadata { path, records }
+        Metadata { base_path: base_path.to_owned(), path, records: BTreeMap::new() }
     }
 }
 
 impl Handler for Metadata {
-    fn handle_file(&mut self, path: &Path, _data: &[u8], last_modified: u64) {
+    fn handle_before(&mut self) -> Result<()> {
+        if !self.base_path.is_dir() {
+            fs::create_dir_all(&self.base_path)?;
+        }
+
+        if self.path.is_file() {
+            debug!("reading existing metadata file `{:?}`", &self.path);
+            let file = fs::File::open(&self.path)?;
+            let mut records: BTreeMap<PathBuf,MetadataRecord> = serde_yaml::from_reader(file)?;
+            self.records.append(&mut records);
+        }
+
+        Ok(())
+    }
+
+    fn handle_file(&mut self, path: &Path, _data: &[u8], last_modified: u64) -> Result<()> {
         debug!("last_modified `{:?}`", last_modified);
 
         if self.records.contains_key(path) {
@@ -59,16 +65,19 @@ impl Handler for Metadata {
                 last_mod: last_modified,
             },
         );
+
+        Ok(())
     }
 
-    fn handle_dir(&mut self, _path: &Path) {
+    fn handle_dir(&mut self, _path: &Path) -> Result<()>{
         // do nothing
+        Ok(())
     }
-}
 
-impl Drop for Metadata {
-    fn drop(&mut self) {
-        let file = fs::File::create(&self.path).unwrap();
-        serde_yaml::to_writer(file, &self.records).unwrap();
+    fn handle_after(&mut self) -> Result<()> {
+        debug!("writing metadata file `{:?}`", &self.path);
+        let file = fs::File::create(&self.path)?;
+        serde_yaml::to_writer(file, &self.records)?;
+        Ok(())
     }
 }

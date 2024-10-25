@@ -12,7 +12,7 @@ cargo install --git https://github.com/mb1986/qrex
 binary_path = "binary"             # path to a qt application binary
 output_path = "output/directory"   # path to a directory for extracted resources
 
-base_address = 0x10000             # value which will be subtracted from any of resource addresses
+base_address = 0x10000             # (optional) value which will be subtracted from any of resource addresses
 
 [[resource]]                       # resource entry
 version = 3                        # Qt resource version (only version 3 is currently supported)
@@ -33,5 +33,6 @@ calls = [0x63a88]
 ## Todo
 
 - [ ] Documentation
-- [ ] Error handling
+- [ ] Format metadata as TOML
+- [x] Error handling (at least `anyhow`)
 - [ ] Tests

@@ -1,5 +1,6 @@
 use std::fs::File;
 
+use anyhow::Result;
 use log::{debug, info, warn};
 
 use crate::handlers::extractor::Extractor;
@@ -8,11 +9,10 @@ use crate::resource::runner::Runner;
 
 pub mod args;
 pub mod config;
-pub mod error;
 pub mod handlers;
 pub mod resource;
 
-fn main() -> error::Result<()> {
+fn main() -> Result<()> {
     let args = args::parse();
 
     env_logger::builder()
@@ -36,16 +36,16 @@ fn main() -> error::Result<()> {
     debug!("base address `{:#x}`", &config.base_address);
 
     if !args.extract && !args.metadata {
-        warn!("there are no handlers attached, in dry run mode")
+        warn!("there are no handlers attached, dry run mode")
     }
 
-    config.resources.iter().for_each(|res| {
+    for res in &config.resources {
         if res.version != 3 {
             warn!(
                 "only version 3 resources are supported, `{:?}` provided, skipping",
                 res.version
             );
-            return;
+            continue;
         }
 
         let tree = res.addresses.tree - config.base_address;
@@ -56,6 +56,7 @@ fn main() -> error::Result<()> {
             "processing resource @ `{:#x}`, `{:#x}`, `{:#x}` (tree, names, data)",
             tree, names, data
         );
+
         let mut runner = Runner::new(tree, names, data);
 
         let base_path = if args.skip_dirs {
@@ -84,9 +85,9 @@ fn main() -> error::Result<()> {
         }
 
         debug!("starting the runner");
-        runner.run(&mut binary);
+        runner.run(&mut binary)?;
         debug!("finishing the runner");
-    });
+    }
 
     Ok(())
 }

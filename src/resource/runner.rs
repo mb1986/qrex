@@ -1,13 +1,14 @@
-use binrw::BinRead;
-use log::debug;
-
 use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
 
-use crate::handlers::handler::Handler;
+use anyhow::Result;
+use binrw::BinRead;
+use log::debug;
+
 use super::data::DataRecord;
 use super::names::NameRecord;
 use super::tree::{Flags, RecordType, TreeRecord, RECORD_SIZE};
+use crate::handlers::handler::Handler;
 
 pub struct Runner {
     tree: u64,
@@ -26,21 +27,29 @@ impl Runner {
         }
     }
 
-    pub fn run<R: Read + Seek>(&mut self, reader: &mut R) {
-        self.traverse_tree(reader, 0, Path::new(""));
+    pub fn run<R: Read + Seek>(&mut self, reader: &mut R) -> Result<()>{
+        for handler in &mut self.handlers {
+            handler.handle_before()?;
+        }
+
+        self.traverse_tree(reader, 0, Path::new(""))?;
+
+        for handler in &mut self.handlers {
+            handler.handle_after()?;
+        }
+        Ok(())
     }
 
     pub fn attach_handler(&mut self, handler: Box<dyn Handler>) {
         self.handlers.push(handler);
     }
 
-    fn traverse_tree<R: Read + Seek>(&mut self, reader: &mut R, offset: u64, base_path: &Path) {
-        //TODO: remove unwraps and add proper error handling
-        reader.seek(SeekFrom::Start(self.tree + offset)).unwrap();
-        let record = TreeRecord::read(reader).unwrap();
+    fn traverse_tree<R: Read + Seek>(&mut self, reader: &mut R, offset: u64, base_path: &Path) -> Result<()> {
+        reader.seek(SeekFrom::Start(self.tree + offset))?;
+        let record = TreeRecord::read(reader)?;
 
         let name = if offset > 0 {
-            &self.read_name(reader, record.name_offset)
+            &self.read_name(reader, record.name_offset)?
         } else {
             ""
         };
@@ -49,12 +58,17 @@ impl Runner {
 
         match &record.variant {
             RecordType::File(_file_record) => {
-                let data = self.read_data(reader, record.offset, &record.flags);
+                let data = self.read_data(reader, record.offset, &record.flags)?;
 
-                debug!("processing file {:?}, {:?} (size: {:?})", path, record.flags, data.len());
+                debug!(
+                    "processing file {:?}, {:?} (size: {:?})",
+                    path,
+                    record.flags,
+                    data.len()
+                );
 
                 for handler in &mut self.handlers {
-                    handler.handle_file(&path, &data, record.last_modified);
+                    handler.handle_file(&path, &data, record.last_modified)?;
                 }
             }
 
@@ -63,7 +77,7 @@ impl Runner {
                     debug!("processing dir  {:?}, {:?}", path, record.flags);
 
                     for handler in &mut self.handlers {
-                        handler.handle_dir(&path);
+                        handler.handle_dir(&path)?;
                     }
                 }
 
@@ -72,33 +86,33 @@ impl Runner {
                         reader,
                         (record.offset as u64 + i as u64) * RECORD_SIZE,
                         &path,
-                    );
+                    )?;
                 }
             }
         }
+
+        Ok(())
     }
 
-    fn read_name<R: Read + Seek>(&self, reader: &mut R, offset: u32) -> String {
+    fn read_name<R: Read + Seek>(&self, reader: &mut R, offset: u32) -> Result<String> {
         reader
-            .seek(SeekFrom::Start(self.names + offset as u64))
-            .unwrap();
+            .seek(SeekFrom::Start(self.names + offset as u64))?;
 
-        let name_record = NameRecord::read(reader).unwrap();
+        let name_record = NameRecord::read(reader)?;
 
-        name_record.name().unwrap()
+        Ok(name_record.name()?)
     }
 
-    fn read_data<R: Read + Seek>(&self, reader: &mut R, offset: u32, flags: &Flags) -> Vec<u8> {
+    fn read_data<R: Read + Seek>(&self, reader: &mut R, offset: u32, flags: &Flags) -> Result<Vec<u8>> {
         reader
-            .seek(SeekFrom::Start(self.data + offset as u64))
-            .unwrap();
+            .seek(SeekFrom::Start(self.data + offset as u64))?;
 
-        let data_record = DataRecord::read(reader).unwrap();
+        let data_record = DataRecord::read(reader)?;
 
         match flags {
             Flags::CompressedZlib => data_record.decompress_zlib(),
             Flags::CompressedZstd => data_record.decompress_zstd(),
-            _ => data_record.data_ref().to_owned(),
+            _ => Ok(data_record.data_ref().to_owned()),
         }
     }
 }

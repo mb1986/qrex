@@ -13,6 +13,6 @@ env_logger = "0.11.5"
 flate2 = { version = "1.0.34", features = ["zlib"], default-features = false }
 log = "0.4.22"
 serde = { version = "1.0.213", features = ["derive"] }
-serde_yaml = "0.9"
+serde_yaml = "0.9.34+deprecated"
 toml = "0.8.19"
 zstd = "0.13.2"

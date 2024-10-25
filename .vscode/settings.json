@@ -3,6 +3,7 @@
         "binread",
         "binrw",
         "flate",
+        "qrex",
         "repr",
         "thiserror"
     ]

@@ -5,7 +5,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Arguments {
-    /// Path to the TOML configuration file
+    /// Path to the YAML or TOML configuration file
     pub config: PathBuf,
 
     /// Extract resources

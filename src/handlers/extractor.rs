@@ -1,4 +1,3 @@
-use log::{debug, warn};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -6,6 +5,7 @@ use std::{
 
 use anyhow::anyhow;
 use anyhow::Result;
+use log::{debug, warn};
 
 use super::handler::Handler;
 

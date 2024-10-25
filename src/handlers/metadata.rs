@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use super::handler::Handler;
 
 const METADATA_FILENAME: &str = "metadata.yaml";
+const METADATA_FILENAME_TOML: &str = "metadata.toml";
 
 #[derive(Serialize, Deserialize)]
 pub struct MetadataRecord {
@@ -29,7 +30,11 @@ impl Metadata {
 
         let path = base_path.join(METADATA_FILENAME);
 
-        Metadata { base_path: base_path.to_owned(), path, records: BTreeMap::new() }
+        Metadata {
+            base_path: base_path.to_owned(),
+            path,
+            records: BTreeMap::new(),
+        }
     }
 }
 
@@ -42,7 +47,7 @@ impl Handler for Metadata {
         if self.path.is_file() {
             debug!("reading existing metadata file `{:?}`", &self.path);
             let file = fs::File::open(&self.path)?;
-            let mut records: BTreeMap<PathBuf,MetadataRecord> = serde_yaml::from_reader(file)?;
+            let mut records: BTreeMap<PathBuf, MetadataRecord> = serde_yaml::from_reader(file)?;
             self.records.append(&mut records);
         }
 
@@ -69,7 +74,7 @@ impl Handler for Metadata {
         Ok(())
     }
 
-    fn handle_dir(&mut self, _path: &Path) -> Result<()>{
+    fn handle_dir(&mut self, _path: &Path) -> Result<()> {
         // do nothing
         Ok(())
     }
@@ -78,6 +83,10 @@ impl Handler for Metadata {
         debug!("writing metadata file `{:?}`", &self.path);
         let file = fs::File::create(&self.path)?;
         serde_yaml::to_writer(file, &self.records)?;
+        fs::write(
+            &self.base_path.join(METADATA_FILENAME_TOML),
+            toml::to_string_pretty(&self.records)?,
+        )?;
         Ok(())
     }
 }

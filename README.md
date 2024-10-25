@@ -33,6 +33,6 @@ calls = [0x63a88]
 ## Todo
 
 - [ ] Documentation
-- [ ] Format metadata as TOML
+- [x] Format metadata as TOML
 - [x] Error handling (at least `anyhow`)
 - [ ] Tests

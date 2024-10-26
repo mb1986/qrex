@@ -1,6 +1,6 @@
 # Qt Resource Extractor (qrex)
 
-[![Current Crates.io Version](https://img.shields.io/crates/v/qrex?style=flat&color=blue)](https://crates.io/crates/qrex)
+[![Current Crates.io Version](https://img.shields.io/crates/v/qrex?logo=rust&style=flat&color=blue)](https://crates.io/crates/qrex)
 
 ## Installation
 
@@ -58,6 +58,23 @@ calls = [0x632e4, 0x64330]
 version = 3
 addresses = { tree = 0x7811a8, names = 0x7810f8, data = 0x780c48 }
 calls = [0x63a88]
+```
+
+## Usage
+
+```text
+Usage: qrex [OPTIONS] <CONFIG>
+
+Arguments:
+  <CONFIG>  Path to the YAML or TOML configuration file
+
+Options:
+  -e, --extract    Extract resources
+  -s, --skip-dirs  Skip creating separate directories for each resource
+  -m, --metadata   Save resources' metadata
+  -d, --debug      Enable debug messages
+  -h, --help       Print help
+  -V, --version    Print version
 ```
 
 ## Todo

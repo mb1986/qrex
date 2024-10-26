@@ -19,15 +19,15 @@ cargo install --git https://github.com/mb1986/qrex
 ## Configuration
 
 ```yaml
-binary_path: binary                # path to a qt application binary
-output_path: output/directory      # path to a directory for extracted resources
+binary_path: binary                # Path to the Qt application binary
+output_path: output/directory      # Directory for extracted resources
 
-base_address: 0x10000              # (optional) value which will be subtracted from any of resource addresses
+base_address: 0x10000              # (optional) Address offset to be subtracted from all resource addresses
 
-resources:                         # resource entries container
-    - version: 3                   # Qt resource version (only version 3 is currently supported)
-      addresses: { tree: 0xb34bd8, names: 0xb34a28, data: 0xb369d8 } # triple of addresses pointing to resource structures
-      calls: [0x61b30, 0x64228]    # (optional) addresses from where a resource has been registered
+resources:                         # Container for resource entries
+    - version: 3                   # Qt resource version (only version 3 is supported)
+      addresses: { tree: 0xb34bd8, names: 0xb34a28, data: 0xb369d8 } # Addresses pointing to resource structures
+      calls: [0x61b30, 0x64228]    # (optional) Addresses where the resource is registered
 
     - version: 3
       addresses: { tree: 0xa962e0, names: 0xa96170, data: 0xa95f98 }
@@ -39,15 +39,15 @@ resources:                         # resource entries container
 ```
 
 ```toml
-binary_path = "binary"             # path to a qt application binary
-output_path = "output/directory"   # path to a directory for extracted resources
+binary_path = "binary"             # Path to the Qt application binary
+output_path = "output/directory"   # Directory for extracted resources
 
-base_address = 0x10000             # (optional) value which will be subtracted from any of resource addresses
+base_address = 0x10000             # (optional) Address offset to be subtracted from all resource addresses
 
-[[resource]]                       # resource entry
-version = 3                        # Qt resource version (only version 3 is currently supported)
-addresses = { tree = 0xb34bd8, names = 0xb34a28, data = 0xb369d8 } # triple of addresses pointing to resource structures
-calls = [0x61b30, 0x64228]         # (optional) addresses from where a resource has been registered
+[[resource]]                       # Resource entry
+version = 3                        # Qt resource version (only version 3 is supported)
+addresses = { tree = 0xb34bd8, names = 0xb34a28, data = 0xb369d8 } # Addresses pointing to resource structures
+calls = [0x61b30, 0x64228]         # (optional) Addresses where the resource is registered
 
 [[resource]]
 version = 3
@@ -82,4 +82,5 @@ Options:
 - [ ] Documentation
 - [x] Format metadata as TOML
 - [x] Error handling (at least `anyhow`)
+- [ ] Better error handling
 - [ ] Tests

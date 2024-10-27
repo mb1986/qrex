@@ -9,6 +9,7 @@ license = "MIT"
 keywords = ["qt", "resource", "extractor", "extraction"]
 categories = ["data-structures", "command-line-utilities", "parsing"]
 edition = "2021"
+rust-version = "1.74.1"
 
 [dependencies]
 anyhow = "1.0.91"

@@ -1,6 +1,7 @@
 # Qt Resource Extractor (qrex)
 
 [![Current Crates.io Version](https://img.shields.io/crates/v/qrex?logo=rust&style=flat&color=blue)](https://crates.io/crates/qrex)
+[![Crates.io MSRV](https://img.shields.io/crates/msrv/qrex?style=flat)](https://crates.io/crates/qrex)
 
 ## Installation
 

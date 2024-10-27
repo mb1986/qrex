@@ -49,9 +49,9 @@ impl Runner {
         let record = TreeRecord::read(reader)?;
 
         let name = if offset > 0 {
-            &self.read_name(reader, record.name_offset)?
+            self.read_name(reader, record.name_offset)?
         } else {
-            ""
+            String::new()
         };
 
         let path = base_path.join(name);

@@ -60,15 +60,16 @@ fn main() -> Result<()> {
         let mut runner = Runner::new(tree, names, data);
 
         let base_path = if args.skip_dirs {
-            &config.output_path
+            config.output_path.to_owned()
         } else {
-            &config
+            config
                 .output_path
+                .to_owned()
                 // FIXME: use below implementation instead of current one
                 //.join(format!("{:#x}_{:#x}_{:#x}", tree, names, data))
                 .join(format!(
                     "{:#x}_{:#x}_{:#x}",
-                    res.addresses.tree, res.addresses.names, res.addresses.data
+                    &res.addresses.tree, &res.addresses.names, &res.addresses.data
                 ))
         };
 

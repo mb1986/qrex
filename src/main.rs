@@ -1,6 +1,6 @@
 use std::fs::File;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use log::{debug, info, warn};
 
 use crate::handlers::extractor::Extractor;
@@ -48,9 +48,9 @@ fn main() -> Result<()> {
             continue;
         }
 
-        let tree = res.addresses.tree - config.base_address;
-        let names = res.addresses.names - config.base_address;
-        let data = res.addresses.data - config.base_address;
+        let tree = rebase("tree", res.addresses.tree, config.base_address)?;
+        let names = rebase("names", res.addresses.names, config.base_address)?;
+        let data = rebase("data", res.addresses.data, config.base_address)?;
 
         info!(
             "processing resource @ `{:#x}`, `{:#x}`, `{:#x}` (tree, names, data)",
@@ -86,4 +86,9 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn rebase(label: &str, addr: u64, base: u64) -> Result<u64> {
+    addr.checked_sub(base)
+        .ok_or_else(|| anyhow!("{label} address {addr:#x} is below base_address {base:#x}"))
 }

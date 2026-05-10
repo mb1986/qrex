@@ -215,3 +215,38 @@ fn metadata_flag_writes_metadata_files() {
     assert!(toml_text.contains("plain.txt"));
     assert!(toml_text.contains("last_mod = 1000"));
 }
+
+#[test]
+fn base_address_above_resource_address_errors_cleanly() {
+    let dir = tempdir().unwrap();
+    let binary_path = dir.path().join("fixture.bin");
+    let output_path = dir.path().join("out");
+    let config_path = dir.path().join("config.yaml");
+
+    let (bytes, _tree, _names, _data) = build_fixture_binary();
+    fs::write(&binary_path, &bytes).unwrap();
+
+    // base_address higher than the resource's tree/names/data addresses (which are 0/etc)
+    // would have wrapped on subtraction in release mode and panicked in debug mode.
+    fs::write(
+        &config_path,
+        format!(
+            "binary_path: {}\noutput_path: {}\nbase_address: 0x10000\nresources:\n  - version: 3\n    addresses: {{ tree: 0x100, names: 0x200, data: 0x300 }}\n",
+            binary_path.display(),
+            output_path.display(),
+        ),
+    )
+    .unwrap();
+
+    let assert = Command::cargo_bin("qrex")
+        .unwrap()
+        .arg("--extract")
+        .arg(&config_path)
+        .assert()
+        .failure();
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+    assert!(
+        stderr.contains("below base_address"),
+        "expected base_address error, got stderr: {stderr}"
+    );
+}

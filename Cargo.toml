@@ -23,3 +23,7 @@ serde = { version = "1.0.213", features = ["derive"] }
 serde_yaml = "0.9.34+deprecated"
 toml = "0.8.19"
 zstd = "0.13.2"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+tempfile = "3"

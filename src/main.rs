@@ -62,15 +62,10 @@ fn main() -> Result<()> {
         let base_path = if args.skip_dirs {
             config.output_path.to_owned()
         } else {
-            config
-                .output_path
-                .to_owned()
-                // FIXME: use below implementation instead of current one
-                //.join(format!("{:#x}_{:#x}_{:#x}", tree, names, data))
-                .join(format!(
-                    "{:#x}_{:#x}_{:#x}",
-                    &res.addresses.tree, &res.addresses.names, &res.addresses.data
-                ))
+            config.output_path.to_owned().join(format!(
+                "{:#x}_{:#x}_{:#x}",
+                res.addresses.tree, res.addresses.names, res.addresses.data
+            ))
         };
 
         if args.extract {

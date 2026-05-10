@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use binrw::binread;
 use flate2::read::ZlibDecoder;
 use zstd::stream::copy_decode;
@@ -21,8 +21,15 @@ impl DataRecord {
     }
 
     pub fn decompress_zlib(&self) -> Result<Vec<u8>> {
+        // Qt prepends a 4-byte big-endian uncompressed-size header before the zlib stream.
+        let body = self.data.get(4..).ok_or_else(|| {
+            anyhow!(
+                "zlib payload too short: {} byte(s), need at least 4 for the size header",
+                self.data.len()
+            )
+        })?;
         let mut data = Vec::new();
-        let mut decoder = ZlibDecoder::new(&self.data[4..]);
+        let mut decoder = ZlibDecoder::new(body);
         decoder.read_to_end(&mut data)?;
         Ok(data)
     }
@@ -93,5 +100,17 @@ mod tests {
         let bytes = encode_data_record(&zlib_payload(&plain));
         let rec = DataRecord::read(&mut Cursor::new(bytes)).unwrap();
         assert_eq!(rec.decompress_zlib().unwrap(), plain);
+    }
+
+    #[test]
+    fn zlib_payload_shorter_than_size_header_errors() {
+        // 3-byte payload — too short to even contain Qt's 4-byte size prefix.
+        let bytes = encode_data_record(&[0x00, 0x00, 0x00]);
+        let rec = DataRecord::read(&mut Cursor::new(bytes)).unwrap();
+        let err = rec.decompress_zlib().unwrap_err();
+        assert!(
+            err.to_string().contains("too short"),
+            "unexpected error message: {err}"
+        );
     }
 }

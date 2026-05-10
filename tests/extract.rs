@@ -217,6 +217,45 @@ fn metadata_flag_writes_metadata_files() {
 }
 
 #[test]
+fn rejects_resource_with_path_traversal_name() {
+    let dir = tempdir().unwrap();
+    let binary_path = dir.path().join("fixture.bin");
+    let output_path = dir.path().join("out");
+    let config_path = dir.path().join("config.yaml");
+
+    // Build a fixture whose root contains a single file named "../escape.txt".
+    let mut blob = Blob::default();
+    let bad_name = blob.add_name("../escape.txt");
+    let payload = blob.add_data(b"pwned");
+    blob.add_dir(0, 1, 1);
+    blob.add_file(bad_name, 0x00, payload, 0);
+    let (bytes, tree, names, data) = blob.build();
+
+    fs::write(&binary_path, &bytes).unwrap();
+    write_yaml_config(
+        &config_path,
+        &binary_path,
+        &output_path,
+        (tree, names, data),
+    );
+
+    let assert = Command::cargo_bin("qrex")
+        .unwrap()
+        .args(["--extract", "--skip-dirs"])
+        .arg(&config_path)
+        .assert()
+        .failure();
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+    assert!(
+        stderr.contains("traversal"),
+        "expected path-traversal error, got stderr: {stderr}"
+    );
+
+    // And the would-be escaped file must not exist next to the output dir.
+    assert!(!dir.path().join("escape.txt").exists());
+}
+
+#[test]
 fn base_address_above_resource_address_errors_cleanly() {
     let dir = tempdir().unwrap();
     let binary_path = dir.path().join("fixture.bin");

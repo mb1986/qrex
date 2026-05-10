@@ -12,18 +12,18 @@ edition = "2024"
 rust-version = "1.85"
 
 [dependencies]
-anyhow = "1.0.91"
-binrw = "0.14.1"
-clap = { version = "4.5.20", features = ["derive"] }
-clap_derive = "4.5.18"
-env_logger = "0.11.5"
-flate2 = { version = "1.0.34", features = ["zlib"], default-features = false }
-log = "0.4.22"
-serde = { version = "1.0.213", features = ["derive"] }
-serde_yaml = "0.9.34+deprecated"
-toml = "0.8.19"
-zstd = "0.13.2"
+anyhow = "1.0.102"
+binrw = "0.15.1"
+clap = { version = "4.6.1", features = ["derive"] }
+clap_derive = "4.6.1"
+env_logger = "0.11.10"
+flate2 = { version = "1.1.9", features = ["zlib"], default-features = false }
+log = "0.4.29"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_yaml = "0.9.34"
+toml = "1.1.2"
+zstd = "0.13.3"
 
 [dev-dependencies]
-assert_cmd = "2.0"
-tempfile = "3"
+assert_cmd = "2.2.1"
+tempfile = "3.27.0"

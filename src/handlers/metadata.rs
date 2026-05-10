@@ -84,7 +84,7 @@ impl Handler for Metadata {
         let file = fs::File::create(&self.path)?;
         serde_yaml::to_writer(file, &self.records)?;
         fs::write(
-            &self.base_path.join(METADATA_FILENAME_TOML),
+            self.base_path.join(METADATA_FILENAME_TOML),
             toml::to_string_pretty(&self.records)?,
         )?;
         Ok(())

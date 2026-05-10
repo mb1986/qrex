@@ -6,7 +6,7 @@
 
 ## Installation
 
-The minimum supported rust version is: **1.74.1**.
+The minimum supported rust version is: **1.85**.
 
 Install from [crates.io](https://crates.io/crates/qrex):
 

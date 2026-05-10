@@ -7,7 +7,7 @@ use log::debug;
 
 use super::data::DataRecord;
 use super::names::NameRecord;
-use super::tree::{Flags, RecordType, TreeRecord, RECORD_SIZE};
+use super::tree::{Flags, RECORD_SIZE, RecordType, TreeRecord};
 use crate::handlers::handler::Handler;
 
 pub struct Runner {
@@ -27,7 +27,7 @@ impl Runner {
         }
     }
 
-    pub fn run<R: Read + Seek>(&mut self, reader: &mut R) -> Result<()>{
+    pub fn run<R: Read + Seek>(&mut self, reader: &mut R) -> Result<()> {
         for handler in &mut self.handlers {
             handler.handle_before()?;
         }
@@ -44,7 +44,12 @@ impl Runner {
         self.handlers.push(handler);
     }
 
-    fn traverse_tree<R: Read + Seek>(&mut self, reader: &mut R, offset: u64, base_path: &Path) -> Result<()> {
+    fn traverse_tree<R: Read + Seek>(
+        &mut self,
+        reader: &mut R,
+        offset: u64,
+        base_path: &Path,
+    ) -> Result<()> {
         reader.seek(SeekFrom::Start(self.tree + offset))?;
         let record = TreeRecord::read(reader)?;
 
@@ -95,17 +100,20 @@ impl Runner {
     }
 
     fn read_name<R: Read + Seek>(&self, reader: &mut R, offset: u32) -> Result<String> {
-        reader
-            .seek(SeekFrom::Start(self.names + offset as u64))?;
+        reader.seek(SeekFrom::Start(self.names + offset as u64))?;
 
         let name_record = NameRecord::read(reader)?;
 
-        Ok(name_record.name()?)
+        name_record.name()
     }
 
-    fn read_data<R: Read + Seek>(&self, reader: &mut R, offset: u32, flags: &Flags) -> Result<Vec<u8>> {
-        reader
-            .seek(SeekFrom::Start(self.data + offset as u64))?;
+    fn read_data<R: Read + Seek>(
+        &self,
+        reader: &mut R,
+        offset: u32,
+        flags: &Flags,
+    ) -> Result<Vec<u8>> {
+        reader.seek(SeekFrom::Start(self.data + offset as u64))?;
 
         let data_record = DataRecord::read(reader)?;
 
